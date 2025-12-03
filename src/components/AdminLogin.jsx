@@ -140,9 +140,7 @@ const AdminLogin = ({ onSuccess }) => {
               />
                 <p className="text-xs text-gray-500 mt-2">An OTP was sent to the admin email. Check your inbox.</p>
                 {/* Developer convenience: show the mock OTP on screen only when a mock code actually exists and we are in mock mode */}
-                {showMockOtp && (
-                  <p className="text-sm text-gray-700 mt-2">Mock OTP (dev): <strong>{mockOtpValue}</strong></p>
-                )}
+                
             </div>
           )}
 

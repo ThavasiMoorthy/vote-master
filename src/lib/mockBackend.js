@@ -68,12 +68,12 @@ export const mockBackend = {
     login: async (username, password) => {
       // Check against dummy credentials
       if (username === DUMMY_USER.email && password === DUMMY_USER.password) {
-          const token = btoa(JSON.stringify({
-            id: DUMMY_USER.id,
-            username: DUMMY_USER.email,
-            role: DUMMY_USER.role,
-            exp: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
-          }));
+        const token = btoa(JSON.stringify({
+          id: DUMMY_USER.id,
+          username: DUMMY_USER.email,
+          role: DUMMY_USER.role,
+          exp: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+        }));
         return {
           success: true,
           token: token,
@@ -86,10 +86,10 @@ export const mockBackend = {
           }
         };
       } else {
-        throw new Error('Invalid email or password. Try: mthavasi085@gmail.com / test@123');
+        throw new Error('Invalid email or password.');
       }
     },
-    
+
     register: async (username, password) => {
       // For demo purposes, just return success
       const token = btoa(JSON.stringify({
@@ -148,9 +148,9 @@ export const mockBackend = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp })
           });
-            const json = await res.json();
-            if (!res.ok) throw new Error(json.error || 'OTP verification failed');
-            return { success: true, token: json.token, user: json.user };
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || 'OTP verification failed');
+          return { success: true, token: json.token, user: json.user };
         }
 
         const stored = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(`otp_${email}`) : null;
