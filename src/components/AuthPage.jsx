@@ -10,7 +10,7 @@ import { Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
 const AuthPage = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ username: 'admin@gmail.com', password: 'test@123' });
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const { login, register } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -68,9 +68,7 @@ const AuthPage = ({ onLoginSuccess }) => {
             {isLogin ? 'Sign In' : 'Create Account'}
           </h2>
           <p className="text-gray-500 text-sm mt-2">
-            {isLogin 
-              ? 'Demo: admin@gmail.com / test@123' 
-              : 'Join us to start collecting voter data'}
+            {isLogin ? 'Sign in to continue' : 'Join us to start collecting voter data'}
           </p>
         </div>
 

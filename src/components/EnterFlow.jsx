@@ -94,6 +94,8 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
         description: err.message || 'Failed to find the address',
         variant: 'destructive'
       });
+      // If geocoding fails, still open the map so the user can select manually
+      setShowMapPreview(true);
     } finally {
       setIsGeocoding(false);
     }
@@ -239,11 +241,42 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
           <Button
             variant="outline"
-            onClick={() => setShowMapPreview(true)}
+            onClick={async () => {
+              // If a location is already set, just open the map.
+              if (formData.location) {
+                setShowMapPreview(true);
+                return;
+              }
+
+              // Build an address from available fields to attempt geocoding.
+              // Avoid forcing `Chennai` as default — instead append state and country
+              const parts = [];
+              if (formData.houseName) parts.push(formData.houseName);
+              if (formData.community) parts.push(formData.community);
+
+              const joined = parts.join(', ').toLowerCase();
+              // If user didn't provide locality info, do not assume Chennai.
+              // Append state and country to bias geocoding within Tamil Nadu, India.
+              if (!joined.includes('tamil') && !joined.includes('india')) {
+                parts.push('Tamil Nadu');
+                parts.push('India');
+              }
+
+              const address = parts.join(', ');
+
+              if (address.trim()) {
+                // Try to geocode and then open the map centered at result
+                await handleAddressGeocode(address);
+              } else {
+                // No address info available, just open the map to allow manual selection
+                setShowMapPreview(true);
+              }
+            }}
             className="w-full gap-2 border-2 hover:bg-blue-50 hover:border-blue-500 transition-all"
+            disabled={isGeocoding}
           >
             <MapPin className="w-4 h-4" />
-            {formData.location ? 'Update Location' : 'Set Location on Map'}
+            {isGeocoding ? 'Finding address...' : (formData.location ? 'Update Location' : 'Set Location on Map')}
           </Button>
 
           {formData.location && (

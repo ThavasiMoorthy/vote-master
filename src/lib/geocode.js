@@ -4,7 +4,8 @@ export async function geocodeAddress(address) {
     throw new Error('Missing Google Maps API key. Set VITE_GOOGLE_MAPS_API_KEY in your environment.');
   }
 
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${key}`;
+  // Add a components filter to bias results to India which helps return local matches
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&components=country:IN&key=${key}`;
 
   const res = await fetch(url);
   if (!res.ok) {

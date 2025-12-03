@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Map, Shield } from 'lucide-react';
+import { FileText, Plus, Shield } from 'lucide-react';
 
 const SplashScreen = ({ onNavigate }) => {
+  const enterRef = useRef(null);
+  const addRef = useRef(null);
+  const adminRef = useRef(null);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <motion.div
@@ -35,10 +39,15 @@ const SplashScreen = ({ onNavigate }) => {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md mx-auto"
         >
+
           <Button
+            ref={enterRef}
             onClick={() => onNavigate('enter')}
+            onDragEnter={(e) => { e.preventDefault(); enterRef.current && enterRef.current.focus(); }}
+            onDragOver={(e) => { e.preventDefault(); }}
+            onDragLeave={() => { enterRef.current && enterRef.current.blur && enterRef.current.blur(); }}
             size="lg"
-            className="h-32 flex flex-col gap-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all"
+            className="h-32 flex flex-col gap-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all focus:[background:white] focus:[background-image:none] active:[background:white] active:[background-image:none] focus:text-black active:text-black"
           >
             <FileText className="w-8 h-8" />
             <span className="text-lg font-semibold">ENTER</span>
@@ -46,31 +55,36 @@ const SplashScreen = ({ onNavigate }) => {
           </Button>
 
           <Button
+            ref={addRef}
             onClick={() => onNavigate('add')}
+            onDragEnter={(e) => { e.preventDefault(); addRef.current && addRef.current.focus(); }}
+            onDragOver={(e) => { e.preventDefault(); }}
+            onDragLeave={() => { addRef.current && addRef.current.blur && addRef.current.blur(); }}
             size="lg"
-            className="h-32 flex flex-col gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
+            className="h-32 flex flex-col gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all focus:[background:white] focus:[background-image:none] active:[background:white] active:[background-image:none] focus:text-black active:text-black"
           >
             <Plus className="w-8 h-8" />
             <span className="text-lg font-semibold">ADD</span>
             <span className="text-xs opacity-90">Add Location Point</span>
           </Button>
+        </motion.div>
 
+        {/* Center the admin button below the two main options */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.45, duration: 0.5 }}
+          className="w-full max-w-md mx-auto mt-6 flex justify-center"
+        >
           <Button
-            onClick={() => onNavigate('map')}
-            size="lg"
-            variant="outline"
-            className="h-32 flex flex-col gap-3 border-2 border-indigo-300 hover:bg-indigo-50 shadow-md hover:shadow-lg transition-all"
-          >
-            <Map className="w-8 h-8 text-indigo-600" />
-            <span className="text-lg font-semibold text-indigo-600">MAP VIEW</span>
-            <span className="text-xs text-gray-600">View All Points</span>
-          </Button>
-
-          <Button
+            ref={adminRef}
             onClick={() => onNavigate('admin')}
+            onDragEnter={(e) => { e.preventDefault(); adminRef.current && adminRef.current.focus(); }}
+            onDragOver={(e) => { e.preventDefault(); }}
+            onDragLeave={() => { adminRef.current && adminRef.current.blur && adminRef.current.blur(); }}
             size="lg"
             variant="outline"
-            className="h-32 flex flex-col gap-3 border-2 border-purple-300 hover:bg-purple-50 shadow-md hover:shadow-lg transition-all"
+            className="w-2/3 h-32 flex flex-col gap-3 border-2 border-purple-300 hover:bg-purple-50 shadow-md hover:shadow-lg transition-all"
           >
             <Shield className="w-8 h-8 text-purple-600" />
             <span className="text-lg font-semibold text-purple-600">ADMIN</span>

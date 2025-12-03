@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { X, MapPin, Crosshair } from 'lucide-react';
@@ -7,11 +7,124 @@ import { toast } from '@/components/ui/use-toast';
 const MapPreview = ({ onClose, onLocationSelect, initialLocation }) => {
   const [selectedLocation, setSelectedLocation] = useState(initialLocation || { lat: 28.6139, lng: 77.2090 }); // Default: New Delhi
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const markerRef = useRef(null);
+
+  // Dynamically load Google Maps script
+  const loadGoogleMaps = () => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      return Promise.reject(new Error('Google Maps API key is not set. Please set VITE_GOOGLE_MAPS_API_KEY in .env'));
+    }
+    // Surface auth failures (invalid key / referer restrictions) to the UI
+    try {
+      window.gm_authFailure = function() {
+        toast({
+          title: 'Google Maps Authentication Failed',
+          description: 'Map failed to authenticate. Check API key, billing, and referrer restrictions in Google Cloud Console. See browser console for details.',
+          variant: 'destructive'
+        });
+      };
+    } catch (e) {
+      // ignore
+    }
+    if (window.google && window.google.maps) return Promise.resolve(window.google.maps);
+
+    return new Promise((resolve, reject) => {
+      const existing = document.getElementById('google-maps-script');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(window.google.maps));
+        existing.addEventListener('error', () => reject(new Error('Failed to load Google Maps script')));
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'google-maps-script';
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        // log which script url was used (helps confirm which key was appended)
+        try { console.debug('Google Maps script loaded:', script.src); } catch(e) {}
+        resolve(window.google.maps);
+      };
+      script.onerror = () => reject(new Error('Failed to load Google Maps script'));
+      document.head.appendChild(script);
+    });
+  };
 
   useEffect(() => {
-    // Initialize map would go here with Google Maps API
-    // For now, we'll use a mock implementation
+    let mounted = true;
+    loadGoogleMaps()
+      .then((maps) => {
+        if (!mounted) return;
+        // initialize map
+        mapRef.current = new maps.Map(mapContainerRef.current, {
+          center: { lat: selectedLocation.lat, lng: selectedLocation.lng },
+          zoom: 15,
+          streetViewControl: false,
+          fullscreenControl: true,
+          mapTypeControl: true,
+          zoomControl: true,
+        });
+
+        markerRef.current = new maps.Marker({
+          position: { lat: selectedLocation.lat, lng: selectedLocation.lng },
+          map: mapRef.current,
+          draggable: true,
+        });
+
+        // click listener to set marker
+        mapRef.current.addListener('click', (e) => {
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+          setSelectedLocation({ lat, lng });
+          if (markerRef.current) markerRef.current.setPosition({ lat, lng });
+        });
+
+        // dragend listener on marker
+        markerRef.current.addListener('dragend', (e) => {
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+          setSelectedLocation({ lat, lng });
+        });
+
+        // Trigger a resize after a short delay to ensure tiles render when the modal animation completes
+        setTimeout(() => {
+          try {
+            if (maps && mapRef.current) {
+              maps.event.trigger(mapRef.current, 'resize');
+              mapRef.current.setCenter({ lat: selectedLocation.lat, lng: selectedLocation.lng });
+            }
+          } catch (e) {
+            // ignore
+          }
+        }, 300);
+      })
+      .catch((err) => {
+        toast({ title: 'Map Error', description: err.message, variant: 'destructive' });
+      });
+
+    return () => {
+      mounted = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // keep marker in sync when selectedLocation changes (from Use Current Location)
+  useEffect(() => {
+    if (markerRef.current) {
+      markerRef.current.setPosition({ lat: selectedLocation.lat, lng: selectedLocation.lng });
+      if (mapRef.current) mapRef.current.panTo({ lat: selectedLocation.lat, lng: selectedLocation.lng });
+    }
+  }, [selectedLocation]);
+
+  // If parent provides a new initialLocation after mount, update the selectedLocation
+  useEffect(() => {
+    if (initialLocation && initialLocation.lat && initialLocation.lng) {
+      setSelectedLocation(initialLocation);
+    }
+  }, [initialLocation]);
 
   const getCurrentLocation = () => {
     setIsLoadingLocation(true);
@@ -48,15 +161,7 @@ const MapPreview = ({ onClose, onLocationSelect, initialLocation }) => {
     }
   };
 
-  const handleMapClick = (e) => {
-    // In real implementation, this would get coordinates from map click
-    // For now, we'll simulate with a small random offset
-    const newLocation = {
-      lat: selectedLocation.lat + (Math.random() - 0.5) * 0.01,
-      lng: selectedLocation.lng + (Math.random() - 0.5) * 0.01
-    };
-    setSelectedLocation(newLocation);
-  };
+  // Map clicks are handled by the Google Maps listener initialized in useEffect
 
   return (
     <motion.div
@@ -100,34 +205,8 @@ const MapPreview = ({ onClose, onLocationSelect, initialLocation }) => {
           </div>
         </div>
 
-        <div 
-          className="flex-1 bg-gray-100 relative cursor-crosshair"
-          onClick={handleMapClick}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="w-64 h-64 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg border-4 border-blue-300 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20">
-                  <div className="grid grid-cols-8 grid-rows-8 h-full">
-                    {Array.from({ length: 64 }).map((_, i) => (
-                      <div key={i} className="border border-gray-300"></div>
-                    ))}
-                  </div>
-                </div>
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="relative z-10"
-                >
-                  <MapPin className="w-16 h-16 text-red-500 drop-shadow-lg" />
-                </motion.div>
-              </div>
-              <p className="text-sm text-gray-600">
-                Click anywhere on the map to set location<br />
-                <span className="text-xs text-gray-500">(Using Google Maps API in production)</span>
-              </p>
-            </div>
-          </div>
+        <div className="flex-1 bg-gray-100 relative min-h-[420px]">
+          <div ref={mapContainerRef} className="absolute inset-0 h-full" />
         </div>
 
         <div className="p-4 border-t bg-gray-50 flex gap-3">

@@ -7,7 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/mockBackend';
 
-const AdminPanel = ({ onNavigate }) => {
+const AdminPanel = ({ onNavigate, adminUser }) => {
   const { logout, user } = useAuth();
   const [sheets, setSheets] = useState([]);
   const [points, setPoints] = useState([]);
@@ -135,10 +135,18 @@ const AdminPanel = ({ onNavigate }) => {
                 <h2 className="text-2xl font-bold">Admin Dashboard</h2>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm opacity-80 hidden md:inline">User: {user?.username}</span>
+                <span className="text-sm opacity-80 hidden md:inline">User: {adminUser?.username || user?.username}</span>
                 <Button
                   variant="ghost"
-                  onClick={logout}
+                  onClick={() => {
+                    // If this panel was opened via in-memory admin auth, clear that and navigate away.
+                    if (adminUser) {
+                      try { sessionStorage.removeItem('admin_auth_token'); } catch (e) {}
+                      onNavigate('splash');
+                    } else {
+                      logout();
+                    }
+                  }}
                   className="text-white hover:bg-white/20 gap-2"
                 >
                   <LogOut className="w-4 h-4" />

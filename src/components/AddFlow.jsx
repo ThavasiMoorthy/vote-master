@@ -9,6 +9,7 @@ import { api } from '@/lib/mockBackend';
 const AddFlow = ({ onNavigate }) => {
   const [sheets, setSheets] = useState([]);
   const [showMapPreview, setShowMapPreview] = useState(false);
+  const [mapInitialLocation, setMapInitialLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,40 +32,34 @@ const AddFlow = ({ onNavigate }) => {
   };
 
   const handleAddNewPoint = () => {
+    // Open the full-screen map preview and center at current position if available
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        (position) => {
           const location = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
-          
-          try {
-            await api.points.create({ location });
-            toast({
-              title: "Location Added",
-              description: `Point added at ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
-            });
-          } catch (error) {
-            toast({
-              title: "Error",
-              description: "Failed to save location point",
-              variant: "destructive"
-            });
-          }
+          setMapInitialLocation(location);
+          setShowMapPreview(true);
         },
         (error) => {
+          // fallback to default map center but still open map for manual selection
+          setMapInitialLocation(null);
+          setShowMapPreview(true);
           toast({
             title: "Location Error",
-            description: "Could not get current location. Please try again.",
+            description: "Could not get current location. You can select manually on the map.",
             variant: "destructive"
           });
         }
       );
     } else {
+      setMapInitialLocation(null);
+      setShowMapPreview(true);
       toast({
         title: "Not Supported",
-        description: "Geolocation is not supported by this browser",
+        description: "Geolocation is not supported by this browser. Please select location manually.",
         variant: "destructive"
       });
     }
@@ -218,9 +213,16 @@ const AddFlow = ({ onNavigate }) => {
 
       {showMapPreview && (
         <MapPreview
+          initialLocation={mapInitialLocation}
           onClose={() => setShowMapPreview(false)}
-          onLocationSelect={(location) => {
+          onLocationSelect={async (location) => {
             setShowMapPreview(false);
+            try {
+              await api.points.create({ location });
+              toast({ title: 'Location Added', description: `Point added at ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` });
+            } catch (err) {
+              toast({ title: 'Error', description: 'Failed to save location point', variant: 'destructive' });
+            }
           }}
         />
       )}

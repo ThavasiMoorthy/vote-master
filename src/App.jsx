@@ -4,8 +4,8 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import SplashScreen from '@/components/SplashScreen';
 import EnterFlow from '@/components/EnterFlow';
 import AddFlow from '@/components/AddFlow';
-import MapView from '@/components/MapView';
 import AdminPanel from '@/components/AdminPanel';
+import AdminLogin from '@/components/AdminLogin';
 import AuthPage from '@/components/AuthPage';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -14,6 +14,9 @@ const AppContent = () => {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('splash'); // splash, enter, add, map, admin
   const [editingSheet, setEditingSheet] = useState(null);
+  // adminAuth is intentionally in-memory so admins must re-authenticate each time
+  const [adminAuth, setAdminAuth] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
 
   const handleNavigate = (view, data = null) => {
     setCurrentView(view);
@@ -22,12 +25,17 @@ const AppContent = () => {
     } else {
       setEditingSheet(null);
     }
+    if (view !== 'admin') {
+      setAdminAuth(false);
+      setAdminUser(null);
+    }
   };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-blue-50">Loading...</div>;
   }
 
+  // Require site-wide login: show AuthPage when no user is authenticated
   if (!user) {
     return <AuthPage onLoginSuccess={() => setCurrentView('splash')} />;
   }
@@ -37,8 +45,13 @@ const AppContent = () => {
       {currentView === 'splash' && <SplashScreen onNavigate={handleNavigate} />}
       {currentView === 'enter' && <EnterFlow onNavigate={handleNavigate} editingSheet={editingSheet} />}
       {currentView === 'add' && <AddFlow onNavigate={handleNavigate} />}
-      {currentView === 'map' && <MapView onNavigate={handleNavigate} />}
-      {currentView === 'admin' && <AdminPanel onNavigate={handleNavigate} />}
+      {currentView === 'admin' && (
+        adminAuth ? (
+          <AdminPanel onNavigate={handleNavigate} adminUser={adminUser} />
+        ) : (
+          <AdminLogin onSuccess={(admin) => { setAdminAuth(true); setAdminUser(admin); setCurrentView('admin'); }} />
+        )
+      )}
     </div>
   );
 };

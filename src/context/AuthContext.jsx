@@ -5,7 +5,8 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('auth_token'));
+  // Do NOT auto-restore token from localStorage on app start — require explicit login each session
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +16,8 @@ export const AuthProvider = ({ children }) => {
         // In a real app, we would verify the JWT here
         const payload = JSON.parse(atob(token));
         if (payload.exp > Date.now()) {
-          setUser({ id: payload.id, username: payload.username });
+          // Include role if it's present in token payload
+          setUser({ id: payload.id, username: payload.username, role: payload.role });
         } else {
           logout();
         }
