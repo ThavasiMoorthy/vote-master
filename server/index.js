@@ -8,6 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Vercel rewrite handler: strip /api prefix if present
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api')) {
+    req.url = req.url.replace(/^\/api/, '');
+  }
+  next();
+});
+
+
 const PORT = process.env.PORT || 3001;
 const OTP_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -106,6 +115,13 @@ app.post('/verify-otp', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`OTP server listening on port ${PORT}`);
-});
+// Export the app for Vercel serverless functions
+module.exports = app;
+
+// Only listen if run directly (not required for Vercel)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`OTP server listening on port ${PORT}`);
+  });
+}
+
