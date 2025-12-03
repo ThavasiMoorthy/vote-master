@@ -59,7 +59,7 @@ const AdminLogin = ({ onSuccess }) => {
           if (OTP_SERVER) {
             toast({ title: 'OTP Sent', description: 'A one-time code was sent to the admin email. Check your inbox.' });
           } else {
-            toast({ title: 'OTP Sent', description: mockCode ? `Mock OTP: ${mockCode}` : 'A one-time code was sent (mock).' });
+            toast({ title: 'OTP Sent', description: 'A one-time code was sent (mock). Check console for code.' });
           }
 
           setPhase('otp');
@@ -138,9 +138,9 @@ const AdminLogin = ({ onSuccess }) => {
                 className="w-full mt-1 p-2 border rounded"
                 placeholder="Enter the 6-digit code"
               />
-                <p className="text-xs text-gray-500 mt-2">An OTP was sent to the admin email. Check your inbox.</p>
-                {/* Developer convenience: show the mock OTP on screen only when a mock code actually exists and we are in mock mode */}
-                
+              <p className="text-xs text-gray-500 mt-2">An OTP was sent to the admin email. Check your inbox.</p>
+              {/* Developer convenience: show the mock OTP on screen only when a mock code actually exists and we are in mock mode */}
+
             </div>
           )}
 
