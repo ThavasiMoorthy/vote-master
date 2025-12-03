@@ -123,7 +123,13 @@ export const mockBackend = {
           });
           const json = await res.json();
           if (!res.ok) throw new Error(json.error || 'Failed to send OTP via server');
-          // server may return otp in dev mode
+
+          // Store stateless OTP details if returned
+          if (json.hash && json.expires) {
+            sessionStorage.setItem(`otp_hash_${email}`, json.hash);
+            sessionStorage.setItem(`otp_expires_${email}`, json.expires);
+          }
+
           return { success: true, otp: json.otp };
         }
 
@@ -143,10 +149,14 @@ export const mockBackend = {
       try {
         const otpServer = import.meta.env.VITE_OTP_API_URL;
         if (otpServer) {
+          // Retrieve stateless details
+          const hash = sessionStorage.getItem(`otp_hash_${email}`);
+          const expires = sessionStorage.getItem(`otp_expires_${email}`);
+
           const res = await fetch(`${otpServer.replace(/\/$/, '')}/verify-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, otp })
+            body: JSON.stringify({ email, otp, hash, expires })
           });
           const json = await res.json();
           if (!res.ok) throw new Error(json.error || 'OTP verification failed');
