@@ -398,6 +398,27 @@ export const mockBackend = {
       }
       throw new Error('Point not found');
     }
+  },
+
+  // Helper to seed data for demonstration
+  seedData: async () => {
+    if (SUPABASE_CONFIGURED) return; // Don't seed real DB
+
+    const demoSheets = [
+      { houseName: 'House A', colourRound: 'red', community: 'Community 1', noOfVoters: 4, location: { lat: 11.1271, lng: 78.6569 }, createdAt: new Date().toISOString() },
+      { houseName: 'House B', colourRound: 'blue', community: 'Community 1', noOfVoters: 3, location: { lat: 11.1281, lng: 78.6579 }, createdAt: new Date().toISOString() },
+      { houseName: 'House C', colourRound: 'saffron', community: 'Community 2', noOfVoters: 5, location: { lat: 11.1261, lng: 78.6559 }, createdAt: new Date().toISOString() },
+      { houseName: 'House D', colourRound: 'green', community: 'Community 2', noOfVoters: 2, location: { lat: 11.1291, lng: 78.6589 }, createdAt: new Date().toISOString() },
+      { houseName: 'House E', colourRound: 'yellow', community: 'Community 3', noOfVoters: 6, location: { lat: 11.1251, lng: 78.6549 }, createdAt: new Date().toISOString() }
+    ];
+
+    for (const s of demoSheets) {
+      const id = `sheet-${nextSheetId++}`;
+      sheetsStore.push({ id, ...s });
+    }
+    saveToStorage(STORAGE_KEY_SHEETS, sheetsStore);
+    saveToStorage(STORAGE_KEY_NEXT_IDS, { nextSheetId, nextPointId });
+    return { success: true };
   }
 };
 

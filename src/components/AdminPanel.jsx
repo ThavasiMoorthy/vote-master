@@ -7,6 +7,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/mockBackend';
 
+import VoterMap from '@/components/VoterMap';
+
 const AdminPanel = ({ onNavigate, adminUser }) => {
   const { logout, user } = useAuth();
   const [sheets, setSheets] = useState([]);
@@ -25,7 +27,7 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
         api.sheets.list(),
         api.points.list()
       ]);
-      
+
       setSheets(fetchedSheets);
       setPoints(fetchedPoints);
 
@@ -141,7 +143,7 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
                   onClick={() => {
                     // If this panel was opened via in-memory admin auth, clear that and navigate away.
                     if (adminUser) {
-                      try { sessionStorage.removeItem('admin_auth_token'); } catch (e) {}
+                      try { sessionStorage.removeItem('admin_auth_token'); } catch (e) { }
                       onNavigate('splash');
                     } else {
                       logout();
@@ -160,6 +162,36 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
             <div className="p-12 text-center">Loading dashboard data...</div>
           ) : (
             <>
+              {stats.totalSheets === 0 && stats.totalPoints === 0 && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 mx-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-yellow-700">
+                          The dashboard is empty. Load demo data to see the map in action?
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="ml-4 bg-white text-yellow-700 hover:bg-yellow-50"
+                      onClick={async () => {
+                        await api.seedData();
+                        loadData();
+                        toast({ title: "Demo Data Loaded", description: "Sample sheets added to the map." });
+                      }}
+                    >
+                      Load Demo Data
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <motion.div
@@ -278,18 +310,8 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
                 </TabsContent>
 
                 <TabsContent value="map" className="mt-6">
-                  <div className="bg-gradient-to-br from-green-100 to-blue-100 rounded-lg p-8 text-center min-h-96 flex items-center justify-center">
-                    <div>
-                      <MapPin className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-                      <p className="text-gray-700 text-lg font-medium">Interactive Map Visualization</p>
-                      <Button
-                        onClick={() => onNavigate('map')}
-                        className="mt-4 gap-2"
-                      >
-                        <MapPin className="w-4 h-4" />
-                        Open Full Map
-                      </Button>
-                    </div>
+                  <div className="bg-white rounded-lg shadow-lg overflow-hidden h-[600px] border border-gray-200 relative">
+                    <VoterMap sheets={sheets} points={points} />
                   </div>
                 </TabsContent>
               </Tabs>
