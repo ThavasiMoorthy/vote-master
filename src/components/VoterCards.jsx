@@ -27,18 +27,18 @@ const VoterCards = ({ voters, onVoterChange, colourRounds }) => {
               </div>
               <span className="font-medium text-gray-700">Voter {index + 1}</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="space-y-1">
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-12 md:col-span-4 space-y-1">
                 <Label htmlFor={`voter-name-${index}`} className="text-xs">Name</Label>
                 <Input
                   id={`voter-name-${index}`}
                   placeholder="Full name"
                   value={voter.name}
                   onChange={(e) => onVoterChange(index, 'name', e.target.value)}
-                  className="h-9 bg-white"
+                  className="h-10 bg-white"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="col-span-6 md:col-span-4 space-y-1">
                 <Label htmlFor={`voter-age-${index}`} className="text-xs">Age</Label>
                 <Input
                   id={`voter-age-${index}`}
@@ -46,16 +46,16 @@ const VoterCards = ({ voters, onVoterChange, colourRounds }) => {
                   placeholder="Age"
                   value={voter.age}
                   onChange={(e) => onVoterChange(index, 'age', e.target.value)}
-                  className="h-9 bg-white"
+                  className="h-10 bg-white"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="col-span-6 md:col-span-4 space-y-1">
                 <Label htmlFor={`voter-colour-${index}`} className="text-xs">Colour Round</Label>
-                <Select 
-                  value={voter.colourRound} 
+                <Select
+                  value={voter.colourRound}
                   onValueChange={(value) => onVoterChange(index, 'colourRound', value)}
                 >
-                  <SelectTrigger className="h-9 bg-white">
+                  <SelectTrigger className="h-10 bg-white">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>

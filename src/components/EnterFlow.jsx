@@ -193,14 +193,14 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
                     handleAddressGeocode(e.target.value);
                   }
                 }}
-                className="transition-all focus:ring-2 focus:ring-blue-500"
+                className="transition-all focus:ring-2 focus:ring-blue-500 h-12"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="colourRound">Colour Round *</Label>
               <Select value={formData.colourRound} onValueChange={(value) => handleInputChange('colourRound', value)}>
-                <SelectTrigger className="transition-all focus:ring-2 focus:ring-blue-500">
+                <SelectTrigger className="transition-all focus:ring-2 focus:ring-blue-500 h-12">
                   <SelectValue placeholder="Select colour" />
                 </SelectTrigger>
                 <SelectContent>
@@ -223,7 +223,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
                 placeholder="Enter community name"
                 value={formData.community}
                 onChange={(e) => handleInputChange('community', e.target.value)}
-                className="transition-all focus:ring-2 focus:ring-blue-500"
+                className="transition-all focus:ring-2 focus:ring-blue-500 h-12"
               />
             </div>
 
@@ -236,7 +236,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
                 placeholder="Enter number"
                 value={formData.noOfVoters}
                 onChange={(e) => handleInputChange('noOfVoters', e.target.value)}
-                className="transition-all focus:ring-2 focus:ring-blue-500"
+                className="transition-all focus:ring-2 focus:ring-blue-500 h-12"
               />
             </div>
           </div>
