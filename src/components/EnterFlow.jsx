@@ -66,6 +66,8 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
     }
 
     const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    console.log('Debug: VITE_GOOGLE_MAPS_API_KEY is', key ? 'Set' : 'Missing', key ? key.substring(0, 5) + '...' : '');
+
     if (!key) {
       toast({
         title: 'API Key Missing',
