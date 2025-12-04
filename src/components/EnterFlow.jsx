@@ -49,10 +49,10 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     if (field === 'noOfVoters') {
       const count = parseInt(value) || 0;
-      const newVoters = Array.from({ length: count }, (_, i) => 
+      const newVoters = Array.from({ length: count }, (_, i) =>
         voters[i] || { name: '', age: '', colourRound: '' }
       );
       setVoters(newVoters);
@@ -286,8 +286,8 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
           )}
 
           {voters.length > 0 && (
-            <VoterCards 
-              voters={voters} 
+            <VoterCards
+              voters={voters}
               onVoterChange={handleVoterChange}
               colourRounds={COLOUR_ROUNDS}
             />
