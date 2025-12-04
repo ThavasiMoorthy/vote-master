@@ -70,7 +70,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
     if (!key) {
       toast({
-        title: 'API Key Missing',
+        title: 'API Key Missing (v1.1)',
         description: 'Set `VITE_GOOGLE_MAPS_API_KEY` in your environment to enable address lookup',
         variant: 'destructive'
       });
@@ -322,6 +322,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
           initialLocation={formData.location}
         />
       )}
+      <div className="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded border">v1.1 - Debug Mode</div>
     </div>
   );
 };
