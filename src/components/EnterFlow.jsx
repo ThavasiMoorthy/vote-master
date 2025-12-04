@@ -176,17 +176,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
             <h2 className="text-2xl font-bold text-gray-800">
               {editingSheet ? 'Edit Sheet' : 'New Sheet'}
             </h2>
-            <Button
-              variant="ghost"
-              onClick={async () => {
-                await api.auth.logout();
-                onNavigate('login');
-              }}
-              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <div className="w-20"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -5,12 +5,14 @@ import { ArrowLeft, Plus, MapPin, Edit, Trash2, FileText, LogOut } from 'lucide-
 import { toast } from '@/components/ui/use-toast';
 import MapPreview from '@/components/MapPreview';
 import { api } from '@/lib/mockBackend';
+import { useAuth } from '@/context/AuthContext';
 
 const AddFlow = ({ onNavigate }) => {
   const [sheets, setSheets] = useState([]);
   const [showMapPreview, setShowMapPreview] = useState(false);
   const [mapInitialLocation, setMapInitialLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { logout } = useAuth();
 
   useEffect(() => {
     loadSheets();
@@ -132,9 +134,8 @@ const AddFlow = ({ onNavigate }) => {
             <h2 className="text-2xl font-bold text-gray-800">Add Location</h2>
             <Button
               variant="ghost"
-              onClick={async () => {
-                await api.auth.logout();
-                onNavigate('login');
+              onClick={() => {
+                logout();
               }}
               className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
             >
