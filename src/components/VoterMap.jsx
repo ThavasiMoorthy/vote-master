@@ -62,26 +62,8 @@ const VoterMap = ({ sheets = [], points = [] }) => {
                     center: { lat: 11.1271, lng: 78.6569 }, // Default to Tamil Nadu center
                     zoom: 7,
                     streetViewControl: false,
-                    mapTypeControl: false,
+                    mapTypeControl: true, // Enable map type control (Satellite/Map)
                     fullscreenControl: true,
-                    backgroundColor: '#e6f3ff', // Light blue background like the image
-                    styles: [
-                        {
-                            "featureType": "all",
-                            "elementType": "all",
-                            "stylers": [{ "visibility": "off" }]
-                        },
-                        {
-                            "featureType": "landscape",
-                            "elementType": "geometry",
-                            "stylers": [{ "visibility": "on" }, { "color": "#f0fdf4" }] // Very light green for land
-                        },
-                        {
-                            "featureType": "water",
-                            "elementType": "geometry",
-                            "stylers": [{ "visibility": "on" }, { "color": "#e0f2fe" }] // Light blue for water
-                        }
-                    ]
                 });
                 mapRef.current = map;
             }

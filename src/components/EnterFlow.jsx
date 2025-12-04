@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, MapPin } from 'lucide-react';
+import { ArrowLeft, Save, MapPin, LogOut } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import VoterCards from '@/components/VoterCards';
 import MapPreview from '@/components/MapPreview';
@@ -176,7 +176,17 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
             <h2 className="text-2xl font-bold text-gray-800">
               {editingSheet ? 'Edit Sheet' : 'New Sheet'}
             </h2>
-            <div className="w-20"></div>
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                await api.auth.logout();
+                onNavigate('login');
+              }}
+              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
