@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, MapPin, Edit, Trash2, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, Edit, Trash2, FileText, LogOut } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import MapPreview from '@/components/MapPreview';
 import { api } from '@/lib/mockBackend';
@@ -130,7 +130,17 @@ const AddFlow = ({ onNavigate }) => {
               Back
             </Button>
             <h2 className="text-2xl font-bold text-gray-800">Add Location</h2>
-            <div className="w-20"></div>
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                await api.auth.logout();
+                onNavigate('login');
+              }}
+              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
           </div>
 
           <Button
@@ -149,7 +159,7 @@ const AddFlow = ({ onNavigate }) => {
           className="bg-white rounded-2xl shadow-xl p-6"
         >
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Existing Sheets</h3>
-          
+
           {isLoading ? (
             <div className="text-center py-12 text-gray-500">Loading records...</div>
           ) : sheets.length === 0 ? (
@@ -192,7 +202,7 @@ const AddFlow = ({ onNavigate }) => {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1 text-sm text-gray-600">
                     <p><span className="font-medium">Community:</span> {sheet.community}</p>
                     <p><span className="font-medium">Voters:</span> {sheet.noOfVoters}</p>
