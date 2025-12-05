@@ -85,6 +85,7 @@ export const mockBackend = {
             token: btoa(JSON.stringify({
               id: user.id,
               username: user.email,
+              email: user.email,
               role: role,
               exp: session?.expires_at ? session.expires_at * 1000 : Date.now() + 24 * 60 * 60 * 1000
             })),

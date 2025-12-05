@@ -131,9 +131,9 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
     try {
       if (editingSheet) {
-        await api.sheets.update(editingSheet.id, { ...formData, voters, userId: user.id });
+        await api.sheets.update(editingSheet.id, { ...formData, voters, userId: user.id, userEmail: user.email });
       } else {
-        await api.sheets.create({ ...formData, voters, userId: user.id });
+        await api.sheets.create({ ...formData, voters, userId: user.id, userEmail: user.email });
       }
 
       toast({

@@ -17,7 +17,12 @@ export const AuthProvider = ({ children }) => {
         const payload = JSON.parse(atob(token));
         if (payload.exp > Date.now()) {
           // Include role if it's present in token payload
-          setUser({ id: payload.id, username: payload.username, role: payload.role });
+          setUser({
+            id: payload.id,
+            username: payload.username,
+            email: payload.email || payload.username, // Fallback to username if email missing
+            role: payload.role
+          });
         } else {
           logout();
         }

@@ -61,7 +61,7 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
     // CSV Generation - Flattened structure (One row per voter)
     const headers = [
       'Sheet ID', 'House Name', 'Sheet Colour', 'Community', 'Total Voters',
-      'Latitude', 'Longitude', 'Created At',
+      'Latitude', 'Longitude', 'Created At', 'User Email',
       'Voter Name', 'Voter Age', 'Voter Colour'
     ];
 
@@ -79,7 +79,8 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
             sheet.noOfVoters,
             sheet.location?.lat || '',
             sheet.location?.lng || '',
-            new Date(sheet.createdAt).toLocaleString(),
+            new Date(sheet.createdAt).toISOString().replace('T', ' ').split('.')[0],
+            sheet.user_email || '',
             voter.name || '',
             voter.age || '',
             voter.colourRound || ''
@@ -95,7 +96,8 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
           sheet.noOfVoters,
           sheet.location?.lat || '',
           sheet.location?.lng || '',
-          new Date(sheet.createdAt).toLocaleString(),
+          new Date(sheet.createdAt).toISOString().replace('T', ' ').split('.')[0],
+          sheet.user_email || '',
           '', '', '' // Empty voter details
         ]);
       }

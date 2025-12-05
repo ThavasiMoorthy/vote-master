@@ -5,7 +5,7 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let supabase = null;
 if (SUPABASE_URL && SUPABASE_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true } });
 }
 
 function ensureClient() {
@@ -52,12 +52,25 @@ export async function supaLogout() {
 // Sheets
 export async function supaCreateSheet(sheetData) {
   const sb = ensureClient();
+
+  // Debug: Check current auth state
+  const { data: { user } } = await sb.auth.getUser();
+  console.log('Debug: Current Supabase User:', user?.id);
+
   // Map camelCase userId to snake_case user_id for Supabase
   const payload = { ...sheetData };
-  if (payload.userId) {
+  if ('userId' in payload) {
     payload.user_id = payload.userId;
     delete payload.userId;
   }
+  if ('userEmail' in payload) {
+    payload.user_email = payload.userEmail;
+    delete payload.userEmail;
+  }
+
+  console.log('Debug: supaCreateSheet payload keys:', Object.keys(payload));
+  console.log('Debug: Payload user_id:', payload.user_id);
+
   const { data, error } = await sb.from('sheets').insert([payload]).select().single();
   if (error) throw error;
   return data;
@@ -88,9 +101,13 @@ export async function supaUpdateSheet(id, updates) {
   const sb = ensureClient();
   // Map camelCase userId to snake_case user_id if present
   const payload = { ...updates };
-  if (payload.userId) {
+  if ('userId' in payload) {
     payload.user_id = payload.userId;
     delete payload.userId;
+  }
+  if ('userEmail' in payload) {
+    payload.user_email = payload.userEmail;
+    delete payload.userEmail;
   }
 
   const { data, error } = await sb.from('sheets').update(payload).eq('id', id).select().single();
