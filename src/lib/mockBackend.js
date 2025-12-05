@@ -247,6 +247,7 @@ export const mockBackend = {
       const sheet = {
         id,
         ...sheetData,
+        userId: sheetData.userId, // Explicitly store userId
         createdAt: new Date().toISOString()
       };
       sheetsStore.push(sheet);
@@ -264,13 +265,45 @@ export const mockBackend = {
         throw new Error('Unauthorized: admin access required');
       }
       if (SUPABASE_CONFIGURED) {
-        return await supa.supaListSheets();
+        // Get current user ID from token if not admin
+        let currentUserId = null;
+        if (role !== 'admin') {
+          const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+          if (token) {
+            try {
+              const payload = JSON.parse(atob(token));
+              currentUserId = payload.id;
+            } catch (e) { }
+          }
+        }
+        return await supa.supaListSheets(currentUserId);
       }
       // refresh from storage to reflect changes across tabs
       if (typeof localStorage !== 'undefined') {
         sheetsStore = loadFromStorage(STORAGE_KEY_SHEETS, sheetsStore);
       }
-      console.log('Fetching sheets, count:', sheetsStore.length);
+
+      // Filter by user ID if not admin
+      if (role !== 'admin') {
+        // We need to get the current user ID. In a real app, this comes from the token.
+        // For mock, we'll decode the token again or use a helper.
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        let currentUserId = null;
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token));
+            currentUserId = payload.id;
+          } catch (e) { }
+        }
+
+        if (currentUserId) {
+          const filtered = sheetsStore.filter(s => s.userId === currentUserId);
+          console.log(`Fetching sheets for user ${currentUserId}, count:`, filtered.length);
+          return filtered;
+        }
+      }
+
+      console.log('Fetching sheets (admin/all), count:', sheetsStore.length);
       return sheetsStore;
     },
 

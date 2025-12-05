@@ -10,6 +10,7 @@ import VoterCards from '@/components/VoterCards';
 import MapPreview from '@/components/MapPreview';
 import { api } from '@/lib/mockBackend';
 import geocodeAddress from '@/lib/geocode';
+import { useAuth } from '@/context/AuthContext';
 
 const COLOUR_ROUNDS = [
   { value: 'saffron', label: 'Saffron', color: 'bg-orange-500' },
@@ -33,6 +34,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
   });
   const [voters, setVoters] = useState([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (editingSheet) {
@@ -125,9 +127,9 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
     try {
       if (editingSheet) {
-        await api.sheets.update(editingSheet.id, { ...formData, voters });
+        await api.sheets.update(editingSheet.id, { ...formData, voters, userId: user?.id });
       } else {
-        await api.sheets.create({ ...formData, voters });
+        await api.sheets.create({ ...formData, voters, userId: user?.id });
       }
 
       toast({

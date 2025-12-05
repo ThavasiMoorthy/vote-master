@@ -22,9 +22,16 @@ export async function supaCreateSheet(sheetData) {
   return data;
 }
 
-export async function supaListSheets() {
+export async function supaListSheets(userId) {
   const sb = ensureClient();
-  const { data, error } = await sb.from('sheets').select('*').order('createdAt', { ascending: false });
+  let query = sb.from('sheets').select('*').order('createdAt', { ascending: false });
+
+  // If userId is provided, filter by it (though RLS should also enforce this)
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return data;
 }
