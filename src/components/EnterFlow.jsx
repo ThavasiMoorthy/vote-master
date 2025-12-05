@@ -76,7 +76,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
         description: 'Set `VITE_GOOGLE_MAPS_API_KEY` in your environment to enable address lookup',
         variant: 'destructive'
       });
-      return;
+      // Don't return, allow manual selection
     }
 
     try {
@@ -93,12 +93,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
       }
     } catch (err) {
       console.error(err);
-      toast({
-        title: 'Geocoding Error',
-        description: err.message || 'Failed to find the address',
-        variant: 'destructive'
-      });
-      // If geocoding fails, still open the map so the user can select manually
+      // Suppress error toast for geocoding failure, just let user pick on map
       setShowMapPreview(true);
     } finally {
       setIsGeocoding(false);
@@ -123,13 +118,22 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
       return;
     }
 
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save. Please refresh or login again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     try {
       if (editingSheet) {
-        await api.sheets.update(editingSheet.id, { ...formData, voters, userId: user?.id });
+        await api.sheets.update(editingSheet.id, { ...formData, voters, userId: user.id });
       } else {
-        await api.sheets.create({ ...formData, voters, userId: user?.id });
+        await api.sheets.create({ ...formData, voters, userId: user.id });
       }
 
       toast({

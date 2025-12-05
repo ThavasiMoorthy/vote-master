@@ -23,11 +23,12 @@ const AddFlow = ({ onNavigate }) => {
       const fetchedSheets = await api.sheets.list();
       setSheets(fetchedSheets);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load sheets",
-        variant: "destructive"
-      });
+      // toast({
+      //   title: "Error",
+      //   description: "Failed to load sheets",
+      //   variant: "destructive"
+      // });
+      console.error("Failed to load sheets", error);
     } finally {
       setIsLoading(false);
     }

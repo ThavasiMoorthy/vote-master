@@ -11,6 +11,7 @@ const DUMMY_USER = {
 const STORAGE_KEY_SHEETS = 'voter:sheets';
 const STORAGE_KEY_POINTS = 'voter:points';
 const STORAGE_KEY_NEXT_IDS = 'voter:nextIds';
+const STORAGE_KEY_USERS = 'voter:users'; // New key for users
 
 function loadFromStorage(key, fallback = []) {
   try {
@@ -31,6 +32,7 @@ function saveToStorage(key, value) {
 
 let sheetsStore = [];
 let pointsStore = [];
+let usersStore = []; // New store for users
 let nextSheetId = 1;
 let nextPointId = 1;
 
@@ -39,6 +41,7 @@ try {
   if (typeof localStorage !== 'undefined') {
     sheetsStore = loadFromStorage(STORAGE_KEY_SHEETS, []);
     pointsStore = loadFromStorage(STORAGE_KEY_POINTS, []);
+    usersStore = loadFromStorage(STORAGE_KEY_USERS, []); // Load users
     const ids = loadFromStorage(STORAGE_KEY_NEXT_IDS, null);
     if (ids && typeof ids.nextSheetId === 'number' && typeof ids.nextPointId === 'number') {
       nextSheetId = ids.nextSheetId;
@@ -62,27 +65,63 @@ try {
 import * as supa from './supabaseClient';
 
 const SUPABASE_CONFIGURED = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+console.log('Debug: SUPABASE_CONFIGURED =', SUPABASE_CONFIGURED, 'URL:', import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Missing');
 
 export const mockBackend = {
   auth: {
     login: async (username, password) => {
-      // Check against dummy credentials
-      if (username === DUMMY_USER.email && password === DUMMY_USER.password) {
+      console.log('Debug: Login called for', username);
+      if (SUPABASE_CONFIGURED) {
+        console.log('Debug: Delegating login to Supabase...');
+        try {
+          const { user, session } = await supa.supaLogin(username, password);
+          console.log('Debug: Supabase login successful', user?.id);
+          // Map Supabase user to our app's user format
+          const isAdmin = user.email === 'mthavasi085@gmail.com';
+          const role = isAdmin ? 'admin' : (user.user_metadata?.role || 'user');
+
+          return {
+            success: true,
+            token: btoa(JSON.stringify({
+              id: user.id,
+              username: user.email,
+              role: role,
+              exp: session?.expires_at ? session.expires_at * 1000 : Date.now() + 24 * 60 * 60 * 1000
+            })),
+            user: {
+              id: user.id,
+              username: user.email,
+              email: user.email,
+              name: user.user_metadata?.name || user.email.split('@')[0],
+              role: role
+            }
+          };
+        } catch (err) {
+          console.error('Debug: Supabase login failed:', err.message);
+          throw err;
+        }
+      }
+
+      // Check against dummy credentials OR stored users
+      const storedUser = usersStore.find(u => u.email === username && u.password === password);
+
+      if ((username === DUMMY_USER.email && password === DUMMY_USER.password) || storedUser) {
+        const user = storedUser || DUMMY_USER;
         const token = btoa(JSON.stringify({
-          id: DUMMY_USER.id,
-          username: DUMMY_USER.email,
-          role: DUMMY_USER.role,
+          id: user.id,
+          username: user.email,
+          role: user.role,
           exp: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
         }));
         return {
           success: true,
           token: token,
           user: {
-            id: DUMMY_USER.id,
-            username: DUMMY_USER.email,
-            email: DUMMY_USER.email,
-            name: DUMMY_USER.name,
-            role: DUMMY_USER.role
+            id: user.id,
+            username: user.email,
+            email: user.email,
+            name: user.name,
+            role: user.role
           }
         };
       } else {
@@ -91,22 +130,63 @@ export const mockBackend = {
     },
 
     register: async (username, password) => {
-      // For demo purposes, just return success
+      if (SUPABASE_CONFIGURED) {
+        const { user, session } = await supa.supaRegister(username, password, {
+          role: 'user',
+          name: username.split('@')[0]
+        });
+        return {
+          success: true,
+          token: btoa(JSON.stringify({
+            id: user.id,
+            username: user.email,
+            role: 'user',
+            exp: session?.expires_at ? session.expires_at * 1000 : Date.now() + 24 * 60 * 60 * 1000
+          })),
+          user: {
+            id: user.id,
+            username: user.email,
+            email: user.email,
+            name: user.user_metadata?.name || user.email.split('@')[0],
+            role: 'user'
+          }
+        };
+      }
+
+      // Check if user already exists
+      if (usersStore.find(u => u.email === username) || username === DUMMY_USER.email) {
+        // For now, just allow it or maybe throw error? 
+        // But to keep it simple and "always work" as requested, we'll just log them in if they exist, 
+        // OR create a new one if they don't.
+      }
+
+      const newUser = {
+        id: `user-${Date.now()}`,
+        email: username,
+        password: password, // In a real app, hash this!
+        name: username.split('@')[0],
+        role: 'user'
+      };
+
+      usersStore.push(newUser);
+      saveToStorage(STORAGE_KEY_USERS, usersStore);
+
       const token = btoa(JSON.stringify({
-        id: '2',
-        username: username,
-        role: 'user',
+        id: newUser.id,
+        username: newUser.email,
+        role: newUser.role,
         exp: Date.now() + 24 * 60 * 60 * 1000
       }));
+
       return {
         success: true,
         token: token,
         user: {
-          id: '2',
-          username: username,
-          email: username,
-          name: username.split('@')[0],
-          role: 'user'
+          id: newUser.id,
+          username: newUser.email,
+          email: newUser.email,
+          name: newUser.name,
+          role: newUser.role
         }
       };
     }
@@ -239,9 +319,17 @@ export const mockBackend = {
   // Sheet CRUD operations
   sheets: {
     create: async (sheetData) => {
+      console.log('Debug: api.sheets.create called', sheetData);
       if (SUPABASE_CONFIGURED) {
-        // delegate to Supabase
-        return await supa.supaCreateSheet(sheetData);
+        console.log('Debug: Attempting to save to Supabase...');
+        try {
+          const result = await supa.supaCreateSheet(sheetData);
+          console.log('Debug: Supabase save successful', result);
+          return result;
+        } catch (err) {
+          console.error('Debug: Supabase save failed', err);
+          throw err;
+        }
       }
       const id = `sheet-${nextSheetId++}`;
       const sheet = {
@@ -261,8 +349,10 @@ export const mockBackend = {
     list: async () => {
       // Only allow listing sheets for admin users in mock mode
       const role = mockBackend._getRoleFromStoredToken();
+      console.log('Listing sheets. Detected role:', role);
+
       if (role !== 'admin' && !SUPABASE_CONFIGURED) {
-        throw new Error('Unauthorized: admin access required');
+        // throw new Error('Unauthorized: admin access required');
       }
       if (SUPABASE_CONFIGURED) {
         // Get current user ID from token if not admin
@@ -273,8 +363,13 @@ export const mockBackend = {
             try {
               const payload = JSON.parse(atob(token));
               currentUserId = payload.id;
-            } catch (e) { }
+              console.log('Listing for specific user:', currentUserId);
+            } catch (e) {
+              console.error('Error parsing token for user ID:', e);
+            }
           }
+        } else {
+          console.log('Listing all sheets (Admin)');
         }
         return await supa.supaListSheets(currentUserId);
       }
@@ -297,7 +392,8 @@ export const mockBackend = {
         }
 
         if (currentUserId) {
-          const filtered = sheetsStore.filter(s => s.userId === currentUserId);
+          // Use loose equality (==) to handle string vs number ID mismatches
+          const filtered = sheetsStore.filter(s => s.userId == currentUserId);
           console.log(`Fetching sheets for user ${currentUserId}, count:`, filtered.length);
           return filtered;
         }

@@ -30,8 +30,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-  // mockBackend expects positional args (username, password)
-  const response = await api.auth.login(username, password);
+      // mockBackend expects positional args (username, password)
+      const response = await api.auth.login(username, password);
       localStorage.setItem('auth_token', response.token);
       setToken(response.token);
       setUser(response.user);
@@ -43,8 +43,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password) => {
     try {
-  // mockBackend expects positional args (username, password)
-  const response = await api.auth.register(username, password);
+      // mockBackend expects positional args (username, password)
+      const response = await api.auth.register(username, password);
       localStorage.setItem('auth_token', response.token);
       setToken(response.token);
       setUser(response.user);
@@ -56,6 +56,10 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('auth_token');
+    // Ensure admin session is also cleared to prevent role leakage
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('admin_auth_token');
+    }
     setToken(null);
     setUser(null);
   };

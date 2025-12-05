@@ -13,10 +13,51 @@ function ensureClient() {
   return supabase;
 }
 
+// Auth
+export async function supaRegister(email, password, metadata = {}) {
+  const sb = ensureClient();
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: {
+      data: metadata,
+    },
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function supaLogin(email, password) {
+  const sb = ensureClient();
+  const { data, error } = await sb.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function supaGetUser() {
+  const sb = ensureClient();
+  const { data: { user } } = await sb.auth.getUser();
+  return user;
+}
+
+export async function supaLogout() {
+  const sb = ensureClient();
+  const { error } = await sb.auth.signOut();
+  if (error) throw error;
+}
+
 // Sheets
 export async function supaCreateSheet(sheetData) {
   const sb = ensureClient();
+  // Map camelCase userId to snake_case user_id for Supabase
   const payload = { ...sheetData };
+  if (payload.userId) {
+    payload.user_id = payload.userId;
+    delete payload.userId;
+  }
   const { data, error } = await sb.from('sheets').insert([payload]).select().single();
   if (error) throw error;
   return data;
@@ -45,7 +86,14 @@ export async function supaGetSheet(id) {
 
 export async function supaUpdateSheet(id, updates) {
   const sb = ensureClient();
-  const { data, error } = await sb.from('sheets').update(updates).eq('id', id).select().single();
+  // Map camelCase userId to snake_case user_id if present
+  const payload = { ...updates };
+  if (payload.userId) {
+    payload.user_id = payload.userId;
+    delete payload.userId;
+  }
+
+  const { data, error } = await sb.from('sheets').update(payload).eq('id', id).select().single();
   if (error) throw error;
   return data;
 }
@@ -95,5 +143,9 @@ export default {
   supaCreatePoint,
   supaListPoints,
   supaUpdatePoint,
-  supaDeletePoint
+  supaDeletePoint,
+  supaRegister,
+  supaLogin,
+  supaGetUser,
+  supaLogout
 };
