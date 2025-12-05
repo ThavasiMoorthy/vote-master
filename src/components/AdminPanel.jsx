@@ -58,30 +58,63 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
       return;
     }
 
-    // CSV Generation (Matching the requested /api/export/sheet logic)
-    const headers = ['ID', 'House Name', 'Colour Round', 'Community', 'No. of Voters', 'Latitude', 'Longitude', 'Created At'];
-    const rows = sheets.map(sheet => [
-      sheet.id,
-      sheet.houseName,
-      sheet.colourRound,
-      sheet.community,
-      sheet.noOfVoters,
-      sheet.location?.lat || '',
-      sheet.location?.lng || '',
-      new Date(sheet.createdAt).toLocaleString()
-    ]);
+    // CSV Generation - Flattened structure (One row per voter)
+    const headers = [
+      'Sheet ID', 'House Name', 'Sheet Colour', 'Community', 'Total Voters',
+      'Latitude', 'Longitude', 'Created At',
+      'Voter Name', 'Voter Age', 'Voter Colour'
+    ];
 
-    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const rows = [];
+
+    sheets.forEach(sheet => {
+      // If there are voters, create a row for each voter
+      if (sheet.voters && sheet.voters.length > 0) {
+        sheet.voters.forEach(voter => {
+          rows.push([
+            sheet.id,
+            sheet.houseName,
+            sheet.colourRound,
+            sheet.community,
+            sheet.noOfVoters,
+            sheet.location?.lat || '',
+            sheet.location?.lng || '',
+            new Date(sheet.createdAt).toLocaleString(),
+            voter.name || '',
+            voter.age || '',
+            voter.colourRound || ''
+          ]);
+        });
+      } else {
+        // If no voters (or empty list), still output the sheet info with empty voter columns
+        rows.push([
+          sheet.id,
+          sheet.houseName,
+          sheet.colourRound,
+          sheet.community,
+          sheet.noOfVoters,
+          sheet.location?.lat || '',
+          sheet.location?.lng || '',
+          new Date(sheet.createdAt).toLocaleString(),
+          '', '', '' // Empty voter details
+        ]);
+      }
+    });
+
+    const csvContent = [headers, ...rows].map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') // Escape quotes
+    ).join('\n');
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `voter-data-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `voter-data-detailed-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
 
     toast({
       title: "Export Successful",
-      description: "CSV file has been downloaded",
+      description: "Detailed CSV file has been downloaded",
     });
   };
 

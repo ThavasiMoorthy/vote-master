@@ -135,6 +135,16 @@ export const mockBackend = {
           role: 'user',
           name: username.split('@')[0]
         });
+
+        console.log('Debug: Register result - User:', user?.id, 'Session:', session ? 'Present' : 'Missing');
+
+        if (!session) {
+          return {
+            success: false,
+            error: "Registration successful! Please check your email to confirm your account before logging in."
+          };
+        }
+
         return {
           success: true,
           token: btoa(JSON.stringify({

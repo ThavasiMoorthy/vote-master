@@ -25,7 +25,7 @@ const AuthPage = ({ onLoginSuccess }) => {
     }
 
     setIsLoading(true);
-    
+
     const action = isLogin ? login : register;
     const result = await action(formData.username, formData.password);
 
@@ -55,7 +55,7 @@ const AuthPage = ({ onLoginSuccess }) => {
       >
         {/* Decorative header */}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600" />
-        
+
         <div className="text-center mb-8">
           <div className="inline-block p-4 bg-blue-50 rounded-full mb-4">
             {isLogin ? (
@@ -83,7 +83,7 @@ const AuthPage = ({ onLoginSuccess }) => {
                 placeholder="admin@gmail.com"
                 className="pl-10"
                 value={formData.username}
-                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               />
             </div>
           </div>
@@ -98,7 +98,7 @@ const AuthPage = ({ onLoginSuccess }) => {
                 placeholder="Enter password"
                 className="pl-10"
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
           </div>
@@ -106,11 +106,10 @@ const AuthPage = ({ onLoginSuccess }) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className={`w-full h-11 text-base ${
-              isLogin 
-                ? 'bg-blue-600 hover:bg-blue-700' 
-                : 'bg-purple-600 hover:bg-purple-700'
-            }`}
+            className={`w-full h-11 text-base ${isLogin
+              ? 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-purple-600 hover:bg-purple-700'
+              }`}
           >
             {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
             {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
@@ -122,8 +121,8 @@ const AuthPage = ({ onLoginSuccess }) => {
             onClick={() => setIsLogin(!isLogin)}
             className="text-sm text-gray-600 hover:text-blue-600 hover:underline transition-colors"
           >
-            {isLogin 
-              ? "Don't have an account? Sign up" 
+            {isLogin
+              ? "Don't have an account? Sign up"
               : "Already have an account? Sign in"}
           </button>
         </div>
