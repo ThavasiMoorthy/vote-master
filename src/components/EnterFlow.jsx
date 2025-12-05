@@ -139,6 +139,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
       setTimeout(() => onNavigate('splash'), 1000);
     } catch (error) {
+      console.error("Save failed:", error);
       toast({
         title: "Error",
         description: "Failed to save sheet. Please try again.",
