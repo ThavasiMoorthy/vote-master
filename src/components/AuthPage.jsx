@@ -10,12 +10,19 @@ import { Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
 const AuthPage = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    booth: '',
+    assembly: '',
+    password: ''
+  });
   const { login, register } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.username || !formData.password) {
+    if (!formData.phone || !formData.password || (!isLogin && (!formData.name || !formData.address || !formData.booth || !formData.assembly))) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -26,8 +33,21 @@ const AuthPage = ({ onLoginSuccess }) => {
 
     setIsLoading(true);
 
-    const action = isLogin ? login : register;
-    const result = await action(formData.username, formData.password);
+    // Use phone number to create a dummy email for Supabase auth
+    const dummyEmail = `${formData.phone}@vote-master.com`;
+
+    let result;
+    if (isLogin) {
+      result = await login(dummyEmail, formData.password);
+    } else {
+      result = await register(dummyEmail, formData.password, {
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+        booth: formData.booth,
+        assembly: formData.assembly
+      });
+    }
 
     setIsLoading(false);
 
@@ -68,25 +88,74 @@ const AuthPage = ({ onLoginSuccess }) => {
             {isLogin ? 'Sign In' : 'Create Account'}
           </h2>
           <p className="text-gray-500 text-sm mt-2">
-            {isLogin ? 'Sign in to continue' : 'Join us to start collecting voter data'}
+            {isLogin ? 'Sign in with your phone number' : 'Fill in your details'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
-            <Label htmlFor="username">Email</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <div className="relative">
               <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <Input
-                id="username"
-                type="email"
-                placeholder="admin@gmail.com"
+                id="phone"
+                type="tel"
+                placeholder="Enter 10-digit number"
                 className="pl-10"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
           </div>
+
+          {!isLogin && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  placeholder="Enter address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="booth">Booth Number</Label>
+                  <Input
+                    id="booth"
+                    placeholder="Booth No."
+                    value={formData.booth}
+                    onChange={(e) => setFormData({ ...formData, booth: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="assembly">Assembly</Label>
+                  <Input
+                    id="assembly"
+                    placeholder="Assembly"
+                    value={formData.assembly}
+                    onChange={(e) => setFormData({ ...formData, assembly: e.target.value })}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -106,13 +175,13 @@ const AuthPage = ({ onLoginSuccess }) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className={`w-full h-11 text-base ${isLogin
+            className={`w-full h-14 text-lg font-bold shadow-lg transition-transform transform active:scale-95 ${isLogin
               ? 'bg-blue-600 hover:bg-blue-700'
-              : 'bg-purple-600 hover:bg-purple-700'
+              : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
               }`}
           >
-            {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
-            {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
+            {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
+            {!isLoading && <ArrowRight className="w-5 h-5 ml-2" />}
           </Button>
         </form>
 

@@ -21,4 +21,20 @@ export async function geocodeAddress(address) {
   return { lat: loc.lat, lng: loc.lng, raw: data.results[0] };
 }
 
+export async function reverseGeocode(lat, lng) {
+  const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  if (!key) throw new Error('Missing API Key');
+
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Reverse geocoding failed');
+
+  const data = await res.json();
+  if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+    return null;
+  }
+
+  return data.results[0].formatted_address;
+}
+
 export default geocodeAddress;

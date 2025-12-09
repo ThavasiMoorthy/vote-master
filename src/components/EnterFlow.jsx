@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/use-toast';
 import VoterCards from '@/components/VoterCards';
 import MapPreview from '@/components/MapPreview';
 import { api } from '@/lib/mockBackend';
-import geocodeAddress from '@/lib/geocode';
+import geocodeAddress, { reverseGeocode } from '@/lib/geocode';
 import { useAuth } from '@/context/AuthContext';
 
 const COLOUR_ROUNDS = [
@@ -109,15 +109,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
   };
 
   const handleSave = async () => {
-    if (!formData.houseName || !formData.colourRound || !formData.community || !formData.noOfVoters) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    // Only require user to be logged in, no mandatory fields validation
     if (!user?.id) {
       toast({
         title: "Error",
@@ -188,7 +180,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="houseName">House Name *</Label>
+              <Label htmlFor="houseName">House Name</Label>
               <Input
                 id="houseName"
                 placeholder="Enter house name"
@@ -205,7 +197,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="colourRound">Colour Round *</Label>
+              <Label htmlFor="colourRound">Colour Round</Label>
               <Select value={formData.colourRound} onValueChange={(value) => handleInputChange('colourRound', value)}>
                 <SelectTrigger className="transition-all focus:ring-2 focus:ring-blue-500 h-12">
                   <SelectValue placeholder="Select colour" />
@@ -224,7 +216,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="community">Community *</Label>
+              <Label htmlFor="community">Community</Label>
               <Input
                 id="community"
                 placeholder="Enter community name"
@@ -235,7 +227,7 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="noOfVoters">No. of Voters *</Label>
+              <Label htmlFor="noOfVoters">No. of Voters</Label>
               <Input
                 id="noOfVoters"
                 type="number"
@@ -251,41 +243,59 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
           <Button
             variant="outline"
             onClick={async () => {
-              // If a location is already set, just open the map.
-              if (formData.location) {
-                setShowMapPreview(true);
+              if (!navigator.geolocation) {
+                toast({
+                  title: "Error",
+                  description: "Geolocation is not supported by your browser",
+                  variant: "destructive"
+                });
                 return;
               }
 
-              // Build an address from available fields to attempt geocoding.
-              // Avoid forcing `Chennai` as default — instead append state and country
-              const parts = [];
-              if (formData.houseName) parts.push(formData.houseName);
-              if (formData.community) parts.push(formData.community);
+              setIsGeocoding(true);
+              navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                  const location = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                  };
 
-              const joined = parts.join(', ').toLowerCase();
-              // If user didn't provide locality info, do not assume Chennai.
-              // Append state and country to bias geocoding within Tamil Nadu, India.
-              if (!joined.includes('tamil') && !joined.includes('india')) {
-                parts.push('Tamil Nadu');
-                parts.push('India');
-              }
+                  let address = '';
+                  try {
+                    address = await reverseGeocode(location.lat, location.lng);
+                  } catch (e) {
+                    console.error("Reverse geocoding failed", e);
+                  }
 
-              const address = parts.join(', ');
+                  setFormData(prev => ({
+                    ...prev,
+                    location,
+                    // Auto-fill houseName if empty and address is found
+                    houseName: (!prev.houseName && address) ? address : prev.houseName
+                  }));
 
-              if (address.trim()) {
-                // Try to geocode and then open the map centered at result
-                await handleAddressGeocode(address);
-              } else {
-                // No address info available, just open the map to allow manual selection
-                setShowMapPreview(true);
-              }
+                  toast({
+                    title: "Location Set",
+                    description: `Fetched: ${address || `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`}`,
+                  });
+                  setIsGeocoding(false);
+                },
+                (error) => {
+                  console.error(error);
+                  toast({
+                    title: "Location Error",
+                    description: "Unable to retrieve your location",
+                    variant: "destructive"
+                  });
+                  setIsGeocoding(false);
+                }
+              );
             }}
             className="w-full gap-2 border-2 hover:bg-blue-50 hover:border-blue-500 transition-all"
             disabled={isGeocoding}
           >
             <MapPin className="w-4 h-4" />
-            {isGeocoding ? 'Finding address...' : (formData.location ? 'Update Location' : 'Set Location on Map')}
+            {isGeocoding ? 'Fetching location...' : (formData.location ? 'Update Current Location' : 'Get Current Location')}
           </Button>
 
           {formData.location && (

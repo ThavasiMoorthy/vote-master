@@ -46,10 +46,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, password) => {
+  const register = async (username, password, metadata = {}) => {
     try {
-      // mockBackend expects positional args (username, password)
-      const response = await api.auth.register(username, password);
+      // mockBackend expects positional args (username, password, metadata)
+      const response = await api.auth.register(username, password, metadata);
       localStorage.setItem('auth_token', response.token);
       setToken(response.token);
       setUser(response.user);

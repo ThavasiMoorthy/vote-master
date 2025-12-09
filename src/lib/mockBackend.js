@@ -130,14 +130,17 @@ export const mockBackend = {
       }
     },
 
-    register: async (username, password) => {
+    register: async (username, password, metadata = {}) => {
       if (SUPABASE_CONFIGURED) {
-        const { user, session } = await supa.supaRegister(username, password, {
+        // Merge default role with provided metadata
+        const userMetadata = {
           role: 'user',
-          name: username.split('@')[0]
-        });
+          name: username.split('@')[0],
+          ...metadata
+        };
+        const { user, session } = await supa.supaRegister(username, password, userMetadata);
 
-        console.log('Debug: Register result - User:', user?.id, 'Session:', session ? 'Present' : 'Missing');
+        console.log('Debug: Register result - User:', user?.id, 'Session:', session ? 'Present' : 'Missing', 'Metadata:', userMetadata);
 
         if (!session) {
           return {

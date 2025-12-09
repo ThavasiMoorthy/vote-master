@@ -34,39 +34,7 @@ const AddFlow = ({ onNavigate }) => {
     }
   };
 
-  const handleAddNewPoint = () => {
-    // Open the full-screen map preview and center at current position if available
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setMapInitialLocation(location);
-          setShowMapPreview(true);
-        },
-        (error) => {
-          // fallback to default map center but still open map for manual selection
-          setMapInitialLocation(null);
-          setShowMapPreview(true);
-          toast({
-            title: "Location Error",
-            description: "Could not get current location. You can select manually on the map.",
-            variant: "destructive"
-          });
-        }
-      );
-    } else {
-      setMapInitialLocation(null);
-      setShowMapPreview(true);
-      toast({
-        title: "Not Supported",
-        description: "Geolocation is not supported by this browser. Please select location manually.",
-        variant: "destructive"
-      });
-    }
-  };
+
 
   const handleEdit = (sheet) => {
     onNavigate('enter', sheet);
@@ -145,13 +113,7 @@ const AddFlow = ({ onNavigate }) => {
             </Button>
           </div>
 
-          <Button
-            onClick={handleAddNewPoint}
-            className="w-full gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 h-16 text-lg shadow-lg"
-          >
-            <MapPin className="w-6 h-6" />
-            Add New Point at My Location
-          </Button>
+
         </motion.div>
 
         <motion.div
