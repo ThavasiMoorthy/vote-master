@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, MapPin, Edit, Trash2, FileText, LogOut } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, Edit, Trash2, FileText, LogOut, Search } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import MapPreview from '@/components/MapPreview';
 import { api } from '@/lib/mockBackend';
@@ -12,6 +12,7 @@ const AddFlow = ({ onNavigate }) => {
   const [showMapPreview, setShowMapPreview] = useState(false);
   const [mapInitialLocation, setMapInitialLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -122,19 +123,38 @@ const AddFlow = ({ onNavigate }) => {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-2xl shadow-xl p-6"
         >
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Existing Sheets</h3>
+          <div className="flex flex-col gap-6 mb-8">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-gray-800">Existing Sheets</h3>
+            </div>
+
+            <div className="relative w-full max-w-2xl mx-auto">
+              <Search className="absolute left-4 top-3.5 h-6 w-6 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search house name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-6 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg shadow-sm transition-all"
+              />
+            </div>
+          </div>
 
           {isLoading ? (
             <div className="text-center py-12 text-gray-500">Loading records...</div>
-          ) : sheets.length === 0 ? (
+          ) : sheets.filter(s => s.houseName.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>No sheets created yet</p>
-              <p className="text-sm">Create your first sheet using the ENTER button</p>
+              <p>No sheets found</p>
+              {searchQuery ? (
+                <p className="text-sm">Try a different search term</p>
+              ) : (
+                <p className="text-sm">Create your first sheet using the ENTER button</p>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sheets.map((sheet, index) => (
+              {sheets.filter(s => s.houseName.toLowerCase().includes(searchQuery.toLowerCase())).map((sheet, index) => (
                 <motion.div
                   key={sheet.id}
                   initial={{ opacity: 0, scale: 0.9 }}
