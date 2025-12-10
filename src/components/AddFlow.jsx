@@ -140,7 +140,8 @@ const AddFlow = ({ onNavigate }) => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border-2 border-blue-200 hover:border-blue-400 transition-all shadow-sm hover:shadow-md"
+                  onClick={() => handleEdit(sheet)}
+                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border-2 border-blue-200 hover:border-blue-400 transition-all shadow-sm hover:shadow-md cursor-pointer group"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -151,18 +152,13 @@ const AddFlow = ({ onNavigate }) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleEdit(sheet)}
-                        className="h-8 w-8 hover:bg-blue-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(sheet.id);
+                        }}
+                        className="h-10 w-10 hover:bg-red-100 rounded-full"
                       >
-                        <Edit className="w-4 h-4 text-blue-600" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(sheet.id)}
-                        className="h-8 w-8 hover:bg-red-100"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
+                        <Trash2 className="w-6 h-6 text-red-600" />
                       </Button>
                     </div>
                   </div>

@@ -188,7 +188,7 @@ const AuthPage = ({ onLoginSuccess }) => {
         <div className="mt-6 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-gray-600 hover:text-blue-600 hover:underline transition-colors"
+            className="text-lg font-bold text-black hover:text-blue-700 hover:underline transition-colors"
           >
             {isLogin
               ? "Don't have an account? Sign up"
