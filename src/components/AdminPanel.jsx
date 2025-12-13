@@ -199,7 +199,7 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
             <>
               {stats.totalSheets === 0 && stats.totalPoints === 0 && (
                 <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 mx-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -208,22 +208,39 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
                       </div>
                       <div className="ml-3">
                         <p className="text-sm text-yellow-700">
-                          The dashboard is empty. Load demo data to see the map in action?
+                          The dashboard is empty. You might have data saved on your computer from before.
                         </p>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="ml-4 bg-white text-yellow-700 hover:bg-yellow-50"
-                      onClick={async () => {
-                        await api.seedData();
-                        loadData();
-                        toast({ title: "Demo Data Loaded", description: "Sample sheets added to the map." });
-                      }}
-                    >
-                      Load Demo Data
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={async () => {
+                          const res = await api.migrateLocalToCloud();
+                          if (res.success) {
+                            toast({ title: "Migration Complete", description: `Synced ${res.count} records to Cloud.` });
+                            loadData();
+                          } else {
+                            toast({ title: "Migration Failed", description: res.message, variant: "destructive" });
+                          }
+                        }}
+                      >
+                        Sync Local Data to Cloud
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="bg-white text-yellow-700 hover:bg-yellow-50"
+                        onClick={async () => {
+                          await api.seedData();
+                          loadData();
+                          toast({ title: "Demo Data Loaded", description: "Sample sheets added to the map." });
+                        }}
+                      >
+                        Load Demo Data
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

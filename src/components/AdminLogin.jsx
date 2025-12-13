@@ -58,7 +58,7 @@ const AdminLogin = ({ onSuccess }) => {
               value={form.username}
               onChange={handleChange}
               className="w-full mt-1 p-2 border rounded"
-              placeholder="admin@gmail.com"
+              placeholder="Enter Admin Email"
             />
           </div>
 

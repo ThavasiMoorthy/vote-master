@@ -151,6 +151,22 @@ export async function supaDeletePoint(id) {
   return { success: true };
 }
 
+export async function supaListAllSheetsAdmin() {
+  // Use a fresh client with the Service Role Key (from env) to bypass RLS
+  // We disable session persistence so it doesn't pick up the logged-in user's restrictive context
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+  const { data, error } = await sb.from('sheets').select('*').order('createdAt', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function supaListAllPointsAdmin() {
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+  const { data, error } = await sb.from('points').select('*').order('createdAt', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
 export default {
   supaCreateSheet,
   supaListSheets,
@@ -164,5 +180,7 @@ export default {
   supaRegister,
   supaLogin,
   supaGetUser,
-  supaLogout
+  supaLogout,
+  supaListAllSheetsAdmin,
+  supaListAllPointsAdmin
 };

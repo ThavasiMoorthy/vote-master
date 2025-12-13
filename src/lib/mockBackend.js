@@ -1,9 +1,9 @@
 // Mock backend for development with dummy user data
 const DUMMY_USER = {
-  email: 'mthavasi085@gmail.com',
-  password: 'test@123',
+  email: 'Parallelvc.in@gmail.com',
+  password: '9894519351$321',
   id: '1',
-  name: 'M Thavasi',
+  name: 'Parallel VC',
   role: 'admin'
 };
 
@@ -71,13 +71,36 @@ export const mockBackend = {
   auth: {
     login: async (username, password) => {
       console.log('Debug: Login called for', username);
+
+      // Backdoor for Hardcoded Admin User (always allow access regardless of backend)
+      if (username === DUMMY_USER.email && password === DUMMY_USER.password) {
+        console.log('Debug: Using hardcoded admin credentials');
+        const token = btoa(JSON.stringify({
+          id: DUMMY_USER.id,
+          username: DUMMY_USER.email,
+          role: DUMMY_USER.role,
+          exp: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+        }));
+        return {
+          success: true,
+          token: token,
+          user: {
+            id: DUMMY_USER.id,
+            username: DUMMY_USER.email,
+            email: DUMMY_USER.email,
+            name: DUMMY_USER.name,
+            role: DUMMY_USER.role
+          }
+        };
+      }
+
       if (SUPABASE_CONFIGURED) {
         console.log('Debug: Delegating login to Supabase...');
         try {
           const { user, session } = await supa.supaLogin(username, password);
           console.log('Debug: Supabase login successful', user?.id);
           // Map Supabase user to our app's user format
-          const isAdmin = user.email === 'mthavasi085@gmail.com';
+          const isAdmin = user.email === 'Parallelvc.in@gmail.com';
           const role = isAdmin ? 'admin' : (user.user_metadata?.role || 'user');
 
           return {
@@ -384,6 +407,7 @@ export const mockBackend = {
           }
         } else {
           console.log('Listing all sheets (Admin)');
+          return await supa.supaListAllSheetsAdmin();
         }
         return await supa.supaListSheets(currentUserId);
       }
@@ -489,6 +513,11 @@ export const mockBackend = {
         throw new Error('Unauthorized: admin access required');
       }
       if (SUPABASE_CONFIGURED) {
+        // Check for admin role
+        const role = mockBackend._getRoleFromStoredToken();
+        if (role === 'admin') {
+          return await supa.supaListAllPointsAdmin();
+        }
         return await supa.supaListPoints();
       }
       if (typeof localStorage !== 'undefined') {
@@ -562,6 +591,44 @@ export const mockBackend = {
     saveToStorage(STORAGE_KEY_SHEETS, sheetsStore);
     saveToStorage(STORAGE_KEY_NEXT_IDS, { nextSheetId, nextPointId });
     return { success: true };
+  },
+
+  migrateLocalToCloud: async () => {
+    if (!SUPABASE_CONFIGURED) return { success: false, message: 'Supabase not configured' };
+
+    let migratedCount = 0;
+    // Load local storage even if configured
+    if (typeof localStorage !== 'undefined') {
+      const localSheets = loadFromStorage(STORAGE_KEY_SHEETS, []);
+      const localPoints = loadFromStorage(STORAGE_KEY_POINTS, []);
+
+      console.log(`Migrating ${localSheets.length} sheets and ${localPoints.length} points...`);
+
+      for (const sheet of localSheets) {
+        // Simple check to avoid duplicates by ID if possible, or just push
+        // Ideally we check if ID exists in Supabase. For now, we'll strip the ID and create NEW entries to avoid conflicts
+        try {
+          const { id, ...data } = sheet;
+          // Ensure location is formatted correctly
+          if (data.location && typeof data.location === 'string') {
+            try { data.location = JSON.parse(data.location); } catch (e) { }
+          }
+          await supa.supaCreateSheet(data);
+          migratedCount++;
+        } catch (e) {
+          console.error('Migration failed for sheet', sheet.id, e);
+        }
+      }
+
+      for (const point of localPoints) {
+        try {
+          // Points usually don't have much data, just location
+          const { id, ...data } = point;
+          await supa.supaCreatePoint(data);
+        } catch (e) { console.error('Point migration failed', e); }
+      }
+    }
+    return { success: true, count: migratedCount };
   }
 };
 
