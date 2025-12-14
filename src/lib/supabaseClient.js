@@ -167,6 +167,13 @@ export async function supaListAllPointsAdmin() {
   return data;
 }
 
+export async function supaDeleteSheetAdmin(id) {
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+  const { error } = await sb.from('sheets').delete().eq('id', id);
+  if (error) throw error;
+  return { success: true };
+}
+
 export default {
   supaCreateSheet,
   supaListSheets,
@@ -182,5 +189,6 @@ export default {
   supaGetUser,
   supaLogout,
   supaListAllSheetsAdmin,
-  supaListAllPointsAdmin
+  supaListAllPointsAdmin,
+  supaDeleteSheetAdmin
 };

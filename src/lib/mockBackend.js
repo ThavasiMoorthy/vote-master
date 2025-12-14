@@ -473,6 +473,10 @@ export const mockBackend = {
         throw new Error('Unauthorized: admin access required');
       }
       if (SUPABASE_CONFIGURED) {
+        const role = mockBackend._getRoleFromStoredToken();
+        if (role === 'admin') {
+          return await supa.supaDeleteSheetAdmin(id);
+        }
         return await supa.supaDeleteSheet(id);
       }
       const index = sheetsStore.findIndex(s => s.id === id);
