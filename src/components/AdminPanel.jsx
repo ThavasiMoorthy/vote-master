@@ -60,7 +60,7 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
 
     // CSV Generation - Flattened structure (One row per voter)
     const headers = [
-      'Sheet ID', 'House Name', 'Sheet Colour', 'Community', 'Total Voters',
+      'Sheet ID', 'EPIC No', 'Mobile Number', 'House Name', 'Sheet Colour', 'Community', 'Total Voters',
       'Latitude', 'Longitude', 'Created At', 'User Email',
       'Voter Name', 'Voter Age', 'Voter Colour'
     ];
@@ -73,6 +73,8 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
         sheet.voters.forEach(voter => {
           rows.push([
             sheet.id,
+            sheet.epicNo || '',
+            sheet.mobileNumber || '',
             sheet.houseName,
             sheet.colourRound,
             sheet.community,
@@ -90,6 +92,8 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
         // If no voters (or empty list), still output the sheet info with empty voter columns
         rows.push([
           sheet.id,
+          sheet.epicNo || '',
+          sheet.mobileNumber || '',
           sheet.houseName,
           sheet.colourRound,
           sheet.community,

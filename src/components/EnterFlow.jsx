@@ -27,6 +27,8 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     houseName: '',
+    mobileNumber: '',
+    epicNo: '',
     colourRound: '',
     community: '',
     noOfVoters: '',
@@ -40,6 +42,8 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
     if (editingSheet) {
       setFormData({
         houseName: editingSheet.houseName || '',
+        mobileNumber: editingSheet.mobileNumber || '',
+        epicNo: editingSheet.epicNo || '',
         colourRound: editingSheet.colourRound || '',
         community: editingSheet.community || '',
         noOfVoters: editingSheet.noOfVoters?.toString() || '',
@@ -179,6 +183,31 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Row 1: EPIC and Mobile */}
+            <div className="space-y-2">
+              <Label htmlFor="epicNo">EPIC No</Label>
+              <Input
+                id="epicNo"
+                placeholder="Enter EPIC No"
+                value={formData.epicNo}
+                onChange={(e) => handleInputChange('epicNo', e.target.value)}
+                className="transition-all focus:ring-2 focus:ring-blue-500 h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mobileNumber">Mobile Number</Label>
+              <Input
+                id="mobileNumber"
+                type="tel"
+                placeholder="Enter Mobile Number"
+                value={formData.mobileNumber}
+                onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
+                className="transition-all focus:ring-2 focus:ring-blue-500 h-12"
+              />
+            </div>
+
+            {/* Row 2: House Name and Colour */}
             <div className="space-y-2">
               <Label htmlFor="houseName">House Name</Label>
               <Input
@@ -188,7 +217,6 @@ const EnterFlow = ({ onNavigate, editingSheet }) => {
                 onChange={(e) => handleInputChange('houseName', e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    // when user presses Enter, try to geocode the entered address
                     handleAddressGeocode(e.target.value);
                   }
                 }}
