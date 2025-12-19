@@ -38,7 +38,28 @@ const VoterCards = ({ voters, onVoterChange, colourRounds }) => {
                   className="h-10 bg-white"
                 />
               </div>
-              <div className="col-span-6 md:col-span-4 space-y-1">
+              <div className="col-span-12 md:col-span-4 space-y-1">
+                <Label htmlFor={`voter-mobile-${index}`} className="text-xs">Mobile Number</Label>
+                <Input
+                  id={`voter-mobile-${index}`}
+                  type="tel"
+                  placeholder="Mobile"
+                  value={voter.mobileNumber || ''}
+                  onChange={(e) => onVoterChange(index, 'mobileNumber', e.target.value)}
+                  className="h-10 bg-white"
+                />
+              </div>
+              <div className="col-span-12 md:col-span-4 space-y-1">
+                <Label htmlFor={`voter-epic-${index}`} className="text-xs">EPIC No</Label>
+                <Input
+                  id={`voter-epic-${index}`}
+                  placeholder="EPIC No"
+                  value={voter.epicNo || ''}
+                  onChange={(e) => onVoterChange(index, 'epicNo', e.target.value)}
+                  className="h-10 bg-white"
+                />
+              </div>
+              <div className="col-span-6 md:col-span-6 space-y-1">
                 <Label htmlFor={`voter-age-${index}`} className="text-xs">Age</Label>
                 <Input
                   id={`voter-age-${index}`}
@@ -49,7 +70,7 @@ const VoterCards = ({ voters, onVoterChange, colourRounds }) => {
                   className="h-10 bg-white"
                 />
               </div>
-              <div className="col-span-6 md:col-span-4 space-y-1">
+              <div className="col-span-6 md:col-span-6 space-y-1">
                 <Label htmlFor={`voter-colour-${index}`} className="text-xs">Colour Round</Label>
                 <Select
                   value={voter.colourRound}

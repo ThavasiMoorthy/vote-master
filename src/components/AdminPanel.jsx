@@ -60,9 +60,9 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
 
     // CSV Generation - Flattened structure (One row per voter)
     const headers = [
-      'Sheet ID', 'EPIC No', 'Mobile Number', 'House Name', 'Sheet Colour', 'Community', 'Total Voters',
+      'Sheet ID', 'House Name', 'Sheet Colour', 'Community', 'Total Voters',
       'Latitude', 'Longitude', 'Created At', 'User Email',
-      'Voter Name', 'Voter Age', 'Voter Colour'
+      'Voter Name', 'Voter Age', 'Voter Colour', 'Voter Mobile', 'Voter EPIC'
     ];
 
     const rows = [];
@@ -73,8 +73,6 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
         sheet.voters.forEach(voter => {
           rows.push([
             sheet.id,
-            sheet.epicNo || '',
-            sheet.mobileNumber || '',
             sheet.houseName,
             sheet.colourRound,
             sheet.community,
@@ -85,15 +83,15 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
             sheet.user_email || '',
             voter.name || '',
             voter.age || '',
-            voter.colourRound || ''
+            voter.colourRound || '',
+            voter.mobileNumber || '',
+            voter.epicNo || ''
           ]);
         });
       } else {
         // If no voters (or empty list), still output the sheet info with empty voter columns
         rows.push([
           sheet.id,
-          sheet.epicNo || '',
-          sheet.mobileNumber || '',
           sheet.houseName,
           sheet.colourRound,
           sheet.community,
@@ -102,7 +100,7 @@ const AdminPanel = ({ onNavigate, adminUser }) => {
           sheet.location?.lng || '',
           new Date(sheet.createdAt).toISOString().replace('T', ' ').split('.')[0],
           sheet.user_email || '',
-          '', '', '' // Empty voter details
+          '', '', '', '', '' // Empty voter details
         ]);
       }
     });
