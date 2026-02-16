@@ -23,7 +23,10 @@ export async function supaRegister(email, password, metadata = {}) {
       data: metadata,
     },
   });
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase Sign-up Error:', error);
+    throw error;
+  }
   return data;
 }
 
